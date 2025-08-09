@@ -1,0 +1,1034 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='message_controls.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="chat-container card border-0 shadow">
+                <!-- Chat Header -->
+                <div class="chat-header card-header bg-primary text-white d-flex align-items-center">
+                    <a href="{{ url_for('messages') }}" class="btn btn-outline-light btn-sm me-3">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="avatar me-3">
+                        {{ other_user.username[0].upper() }}
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ other_user.full_name }}</h5>
+                        <small class="opacity-75">@{{ other_user.username }}</small>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="chat-messages card-body p-0" id="chatMessages">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="message-wrapper p-3 {% if message.sender_id == session['user_id'] %}sent{% else %}received{% endif %}" data-message-id="{{ message.id }}">
+                            <div class="message" data-message-id="{{ message.id }}">
+                                <div class="message-content">
+                                    <span class="message-text">{{ message.content }}</span>
+                                </div>
+                                
+                                <div class="message-actions d-flex justify-content-between align-items-center">
+                                    <div class="message-time">
+                                        {{ message.timestamp.strftime('%H:%M') }}
+                                    </div>
+                                    
+                                    <!-- أزرار التحكم - تظهر دائماً -->
+                                    <div class="message-controls d-flex gap-1">
+                                        <!-- زر الرد -->
+                                        <button class="btn btn-sm btn-outline-secondary reply-btn" 
+                                                data-message-id="{{ message.id }}" 
+                                                data-sender-name="{{ message.sender.full_name }}"
+                                                title="رد">
+                                            <i class="fas fa-reply"></i>
+                                        </button>
+                                        
+                                        <!-- أزرار التعديل والحذف للمرسل فقط -->
+                                        {% if message.sender_id == session['user_id'] %}
+                                            <button class="btn btn-sm btn-outline-warning edit-btn" 
+                                                    data-message-id="{{ message.id }}"
+                                                    title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            
+                                            <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                                    data-message-id="{{ message.id }}"
+                                                    title="حذف">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>ابدأ المحادثة مع {{ other_user.full_name }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Input -->
+                <div class="chat-input card-footer bg-light">
+                    <form id="messageForm" class="d-flex gap-2 align-items-end" enctype="multipart/form-data">
+                        <input type="hidden" id="receiverId" value="{{ other_user.id }}">
+                        
+                        <!-- زر إرفاق الوسائط -->
+                        <div class="media-upload-container">
+                            <button type="button" class="btn btn-outline-secondary media-btn" onclick="document.getElementById('mediaFile').click()">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <input type="file" id="mediaFile" name="media_file" accept="image/*,video/*" style="display: none;">
+                        </div>
+                        
+                        <!-- معاينة الملف المحدد -->
+                        <div id="mediaPreview" class="media-preview" style="display: none;">
+                            <div class="preview-content">
+                                <img id="previewImage" style="display: none; max-width: 60px; max-height: 60px; border-radius: 8px;">
+                                <video id="previewVideo" style="display: none; max-width: 60px; max-height: 60px; border-radius: 8px;" muted></video>
+                                <div id="previewFile" style="display: none;" class="file-preview">
+                                    <i class="fas fa-file"></i>
+                                    <span class="file-name"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger remove-media" onclick="removeMedia()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <input type="text" id="messageInput" class="form-control" placeholder="اكتب رسالتك...">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-container {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 15px 20px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(80vh - 140px);
+    background: #f8f9fa;
+}
+
+.message-wrapper {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.message-wrapper.sent {
+    text-align: right;
+    background: transparent;
+    padding: 8px 20px !important;
+}
+
+.message-wrapper.received {
+    text-align: left;
+    background: transparent;
+    padding: 8px 20px !important;
+}
+
+.message {
+    display: inline-block;
+    max-width: 75%;
+    position: relative;
+}
+
+.message-wrapper.sent .message {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 25px 25px 5px 25px;
+    padding: 15px 20px;
+    margin-left: auto;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    font-weight: 500;
+    position: relative;
+}
+
+.message-wrapper.sent .message::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -8px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-top-color: #764ba2;
+    border-left-color: #764ba2;
+    transform: rotate(45deg);
+}
+
+.message-wrapper.received .message {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    color: #2c3e50;
+    border-radius: 25px 25px 25px 5px;
+    padding: 15px 20px;
+    margin-right: auto;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+    position: relative;
+}
+
+.message-wrapper.received .message::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -8px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-top-color: #ffffff;
+    border-right-color: #ffffff;
+    transform: rotate(-45deg);
+}
+
+.message-content {
+    margin-bottom: 8px;
+    line-height: 1.5;
+    font-size: 1rem;
+}
+
+.message-time {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    font-weight: 400;
+    margin-top: 3px;
+    text-align: center;
+}
+
+.message-wrapper.sent .message-time {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-wrapper.received .message-time {
+    color: #6c757d;
+}
+
+/* تأثيرات حركية للرسائل */
+.message-wrapper {
+    animation: messageSlideIn 0.3s ease-out;
+    transition: all 0.2s ease;
+}
+
+.message-wrapper:hover .message {
+    transform: scale(1.02);
+}
+
+.message {
+    transition: all 0.3s ease;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تحسين الخلفية */
+.chat-messages {
+    background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+}
+
+/* تحسين scrollbar */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+.chat-input {
+    border-radius: 0 0 15px 15px !important;
+    padding: 15px 20px;
+}
+
+.chat-input .form-control {
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    padding: 12px 20px;
+    font-size: 16px; /* منع التكبير في iOS */
+}
+
+.chat-input .btn {
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-btn {
+    border-radius: 50% !important;
+    width: 45px !important;
+    height: 45px !important;
+}
+
+.media-preview {
+    position: relative;
+    margin: 0 8px;
+}
+
+.preview-content {
+    position: relative;
+    display: inline-block;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px;
+    border: 2px solid #dee2e6;
+}
+
+.remove-media {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    font-size: 10px;
+}
+
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: #e9ecef;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.message-image, .message-video {
+    transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+    transform: scale(1.05);
+}
+
+.file-download {
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.message-wrapper.received .file-download {
+    background: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+.file-download:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* أنماط الرد والتحكم في الرسائل */
+.reply-to-message {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    border-left: 3px solid #667eea;
+    margin-bottom: 8px;
+}
+
+.reply-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.original-message {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.message-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.message-controls {
+    display: flex;
+    gap: 4px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.message:hover .message-controls,
+.message-wrapper:hover .message-controls {
+    opacity: 1;
+}
+
+/* تحسين ظهور الأزرار */
+@media (max-width: 768px) {
+    .message-controls {
+        opacity: 1;
+    }
+}
+
+/* تحسين أزرار التحكم */
+.message-controls .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-controls .btn:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* تحسين الرسائل القصيرة */
+.message-wrapper {
+    min-height: 60px;
+    position: relative;
+}
+
+.message-actions {
+    margin-top: 8px;
+    min-height: 32px;
+}
+
+/* ضمان ظهور الأزرار للرسائل القصيرة */
+.message-wrapper:hover .message-controls,
+.message-wrapper.active .message-controls {
+    opacity: 1 !important;
+}
+
+/* تحسين التباعد */
+.message-content {
+    margin-bottom: 8px;
+    min-height: 20px;
+    word-wrap: break-word;
+}
+
+/* تحسين الألوان */
+.btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-outline-warning {
+    border-color: rgba(255, 193, 7, 0.5);
+    color: #ffc107;
+}
+
+.btn-outline-danger {
+    border-color: rgba(220, 53, 69, 0.5);
+    color: #dc3545;
+}
+
+.message-controls .btn {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+}
+
+.edited-indicator {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+/* نموذج الرد */
+.reply-form {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reply-form .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.reply-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* نموذج التعديل */
+.edit-form {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 8px;
+}
+
+.edit-form .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.9rem;
+}
+
+.edit-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+/* تحسينات للموبايل */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 85vh;
+        margin: 0 -15px;
+        border-radius: 0;
+    }
+    
+    .chat-header {
+        border-radius: 0 !important;
+    }
+    
+    .chat-input {
+        border-radius: 0 !important;
+    }
+    
+    .message {
+        max-width: 85%;
+    }
+    
+    .chat-messages {
+        max-height: calc(85vh - 140px);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const receiverId = document.getElementById('receiverId').value;
+
+    // التمرير إلى آخر رسالة
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // معالجة اختيار الملف
+    const mediaFile = document.getElementById('mediaFile');
+    const mediaPreview = document.getElementById('mediaPreview');
+    
+    mediaFile.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            showMediaPreview(file);
+        }
+    });
+
+    // إرسال رسالة
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = messageInput.value.trim();
+        const mediaFile = document.getElementById('mediaFile').files[0];
+        
+        if (!content && !mediaFile) return;
+
+        // إنشاء FormData للإرسال
+        const formData = new FormData();
+        formData.append('receiver_id', receiverId);
+        if (content) formData.append('content', content);
+        if (mediaFile) formData.append('media_file', mediaFile);
+
+        // إضافة الرسالة فوراً للواجهة
+        if (content) {
+            addMessageToChat(content, true, 'text');
+        }
+        if (mediaFile) {
+            addMediaMessageToChat(mediaFile, true);
+        }
+        
+        // إعادة تعيين النموذج
+        messageInput.value = '';
+        removeMedia();
+
+        // إرسال الرسالة للخادم
+        fetch('/send_message', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                console.error('خطأ في إرسال الرسالة:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('خطأ:', error);
+        });
+    });
+
+    function addMessageToChat(content, isSent, messageType = 'text') {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `message-wrapper p-3 ${isSent ? 'sent' : 'received'}`;
+        
+        const now = new Date();
+        const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                          now.getMinutes().toString().padStart(2, '0');
+        
+        messageWrapper.innerHTML = `
+            <div class="message">
+                <div class="message-content">${content}</div>
+                <div class="message-time">${timeString}</div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageWrapper);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function addMediaMessageToChat(file, isSent) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `message-wrapper p-3 ${isSent ? 'sent' : 'received'}`;
+        
+        const now = new Date();
+        const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                          now.getMinutes().toString().padStart(2, '0');
+        
+        let mediaContent = '';
+        if (file.type.startsWith('image/')) {
+            const imageUrl = URL.createObjectURL(file);
+            mediaContent = `<img src="${imageUrl}" class="img-fluid rounded message-image" style="max-width: 250px;" alt="صورة">`;
+        } else if (file.type.startsWith('video/')) {
+            const videoUrl = URL.createObjectURL(file);
+            mediaContent = `<video controls class="rounded message-video" style="max-width: 250px;"><source src="${videoUrl}" type="${file.type}"></video>`;
+        } else {
+            mediaContent = `<div class="file-preview"><i class="fas fa-file"></i> ${file.name}</div>`;
+        }
+        
+        messageWrapper.innerHTML = `
+            <div class="message">
+                <div class="message-content">${mediaContent}</div>
+                <div class="message-time">${timeString}</div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageWrapper);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function showMediaPreview(file) {
+        const previewImage = document.getElementById('previewImage');
+        const previewVideo = document.getElementById('previewVideo');
+        const previewFile = document.getElementById('previewFile');
+        
+        // إخفاء جميع المعاينات
+        previewImage.style.display = 'none';
+        previewVideo.style.display = 'none';
+        previewFile.style.display = 'none';
+        
+        if (file.type.startsWith('image/')) {
+            previewImage.src = URL.createObjectURL(file);
+            previewImage.style.display = 'block';
+        } else if (file.type.startsWith('video/')) {
+            previewVideo.src = URL.createObjectURL(file);
+            previewVideo.style.display = 'block';
+        } else {
+            previewFile.querySelector('.file-name').textContent = file.name;
+            previewFile.style.display = 'flex';
+        }
+        
+        mediaPreview.style.display = 'block';
+    }
+    
+    function removeMedia() {
+        document.getElementById('mediaFile').value = '';
+        document.getElementById('mediaPreview').style.display = 'none';
+        
+        // تنظيف URLs المؤقتة
+        const previewImage = document.getElementById('previewImage');
+        const previewVideo = document.getElementById('previewVideo');
+        if (previewImage.src) URL.revokeObjectURL(previewImage.src);
+        if (previewVideo.src) URL.revokeObjectURL(previewVideo.src);
+    }
+    
+    function openImageModal(src) {
+        // إنشاء modal لعرض الصورة بحجم كامل
+        const modal = document.createElement('div');
+        modal.className = 'image-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            cursor: pointer;
+        `;
+        
+        const img = document.createElement('img');
+        img.src = src;
+        img.style.cssText = `
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        `;
+        
+        modal.appendChild(img);
+        document.body.appendChild(modal);
+        
+        modal.addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    // معالجة أزرار الرد والتعديل والحذف
+    document.addEventListener('click', function(e) {
+        // تأكيد أن الأزرار تظهر عند النقر
+        if (e.target.closest('.message-wrapper')) {
+            const wrapper = e.target.closest('.message-wrapper');
+            wrapper.classList.add('active');
+            
+            // إزالة active من الرسائل الأخرى
+            document.querySelectorAll('.message-wrapper').forEach(w => {
+                if (w !== wrapper) w.classList.remove('active');
+            });
+        }
+        
+        if (e.target.closest('.reply-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.reply-btn');
+            const messageId = btn.dataset.messageId;
+            const senderName = btn.dataset.senderName;
+            
+            showReplyForm(messageId, senderName);
+        }
+        
+        // معالجة أزرار التعديل
+        if (e.target.closest('.edit-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.edit-btn');
+            const messageId = btn.dataset.messageId;
+            const messageWrapper = btn.closest('.message-wrapper');
+            const messageText = messageWrapper.querySelector('.message-text').textContent.trim();
+            
+            showEditForm(messageId, messageText, messageWrapper);
+        }
+        
+        // معالجة أزرار الحذف
+        if (e.target.closest('.delete-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.delete-btn');
+            const messageId = btn.dataset.messageId;
+            
+            if (confirm('هل أنت متأكد من حذف هذه الرسالة؟\nلا يمكن التراجع عن هذا الإجراء.')) {
+                deleteMessage(messageId);
+            }
+        }
+    });
+    
+    // تحديث الرسائل كل 5 ثواني
+    setInterval(function() {
+        // يمكن إضافة كود لجلب الرسائل الجديدة هنا
+    }, 5000);
+});
+
+// دوال التحكم في الرسائل
+function showReplyForm(messageId, senderName) {
+    // إزالة نماذج الرد الموجودة
+    document.querySelectorAll('.reply-form').forEach(form => form.remove());
+    
+    const messageWrapper = document.querySelector(`[data-message-id="${messageId}"]`);
+    
+    const replyForm = document.createElement('div');
+    replyForm.className = 'reply-form';
+    replyForm.innerHTML = `
+        <div class="reply-header mb-2">
+            <small class="text-muted">
+                <i class="fas fa-reply me-1"></i>
+                رد على ${senderName}
+            </small>
+            <button type="button" class="btn btn-sm btn-outline-secondary float-end cancel-reply">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="d-flex gap-2">
+            <input type="text" class="form-control reply-input" placeholder="اكتب ردك...">
+            <button type="button" class="btn btn-primary btn-sm send-reply" data-reply-to="${messageId}">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    `;
+    
+    messageWrapper.appendChild(replyForm);
+    replyForm.querySelector('.reply-input').focus();
+    
+    // معالجة إلغاء الرد
+    replyForm.querySelector('.cancel-reply').addEventListener('click', () => {
+        replyForm.remove();
+    });
+    
+    // معالجة إرسال الرد
+    replyForm.querySelector('.send-reply').addEventListener('click', () => {
+        const content = replyForm.querySelector('.reply-input').value.trim();
+        if (content) {
+            sendReply(messageId, content);
+            replyForm.remove();
+        }
+    });
+    
+    // إرسال الرد بالضغط على Enter
+    replyForm.querySelector('.reply-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const content = e.target.value.trim();
+            if (content) {
+                sendReply(messageId, content);
+                replyForm.remove();
+            }
+        }
+    });
+}
+
+function showEditForm(messageId, currentText, messageWrapper) {
+    const messageContent = messageWrapper.querySelector('.message-content');
+    const originalContent = messageContent.innerHTML;
+    
+    messageContent.innerHTML = `
+        <div class="edit-form">
+            <div class="d-flex gap-2">
+                <input type="text" class="form-control edit-input" value="${currentText}">
+                <button type="button" class="btn btn-success btn-sm save-edit" data-message-id="${messageId}">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm cancel-edit">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const editInput = messageContent.querySelector('.edit-input');
+    editInput.focus();
+    editInput.select();
+    
+    // معالجة الحفظ
+    messageContent.querySelector('.save-edit').addEventListener('click', () => {
+        const newContent = editInput.value.trim();
+        if (newContent && newContent !== currentText) {
+            editMessage(messageId, newContent, messageWrapper);
+        } else {
+            messageContent.innerHTML = originalContent;
+        }
+    });
+    
+    // معالجة الإلغاء
+    messageContent.querySelector('.cancel-edit').addEventListener('click', () => {
+        messageContent.innerHTML = originalContent;
+    });
+    
+    // حفظ بالضغط على Enter
+    editInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const newContent = e.target.value.trim();
+            if (newContent && newContent !== currentText) {
+                editMessage(messageId, newContent, messageWrapper);
+            } else {
+                messageContent.innerHTML = originalContent;
+            }
+        }
+    });
+}
+
+function sendReply(replyToId, content) {
+    const formData = new FormData();
+    formData.append('receiver_id', receiverId);
+    formData.append('content', content);
+    formData.append('reply_to_id', replyToId);
+    
+    fetch('/reply_message', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // إعادة تحميل الصفحة لعرض الرد الجديد
+            location.reload();
+        } else {
+            alert('خطأ في إرسال الرد: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('خطأ:', error);
+        alert('حدث خطأ في إرسال الرد');
+    });
+}
+
+function editMessage(messageId, newContent, messageWrapper) {
+    const formData = new FormData();
+    formData.append('message_id', messageId);
+    formData.append('content', newContent);
+    
+    fetch('/edit_message', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // تحديث النص في الواجهة
+            const messageText = messageWrapper.querySelector('.message-text');
+            messageText.textContent = data.edited_content;
+        } else {
+            alert('خطأ في تعديل الرسالة: ' + data.message);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('خطأ:', error);
+        alert('حدث خطأ في تعديل الرسالة');
+        location.reload();
+    });
+}
+
+function deleteMessage(messageId) {
+    const formData = new FormData();
+    formData.append('message_id', messageId);
+    
+    fetch('/delete_message', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // إزالة الرسالة من الواجهة
+            const messageWrapper = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageWrapper) {
+                messageWrapper.style.opacity = '0';
+                messageWrapper.style.transform = 'translateX(-100%)';
+                setTimeout(() => {
+                    messageWrapper.remove();
+                }, 300);
+            }
+        } else {
+            alert('خطأ في حذف الرسالة: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('خطأ:', error);
+        alert('حدث خطأ في حذف الرسالة');
+    });
+}
+
+function addReplyToChat(messageData, replyToId) {
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper p-3 sent';
+    messageWrapper.dataset.messageId = messageData.id;
+    
+    // البحث عن الرسالة الأصلية للحصول على النص
+    const originalMessage = document.querySelector(`[data-message-id="${replyToId}"] .message-text`);
+    const originalText = originalMessage ? originalMessage.textContent : '';
+    const shortText = originalText.length > 50 ? originalText.substring(0, 50) + '...' : originalText;
+    
+    messageWrapper.innerHTML = `
+        <div class="reply-to-message mb-2">
+            <div class="reply-indicator">
+                <i class="fas fa-reply me-1"></i>
+                <small class="text-muted">رد على:</small>
+            </div>
+            <div class="original-message">
+                <small class="text-muted">${shortText}</small>
+            </div>
+        </div>
+        <div class="message" data-message-id="${messageData.id}">
+            <div class="message-content">
+                <span class="message-text">${messageData.content}</span>
+            </div>
+            <div class="message-actions">
+                <div class="message-time">${messageData.timestamp}</div>
+                <div class="message-controls">
+                    <button class="btn btn-sm btn-outline-secondary reply-btn" 
+                            data-message-id="${messageData.id}" 
+                            title="رد">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning edit-btn" 
+                            data-message-id="${messageData.id}"
+                            title="تعديل">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-btn" 
+                            data-message-id="${messageData.id}"
+                            title="حذف">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageWrapper);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// جعل الدوال متاحة عالمياً
+window.removeMedia = removeMedia;
+window.openImageModal = openImageModal;
+</script>
+{% endblock %}

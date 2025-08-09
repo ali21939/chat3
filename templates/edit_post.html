@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg rounded-4 p-4" style="max-width: 700px; margin: auto;">
+        <h3 class="mb-4 text-center text-primary">تعديل المنشور</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="post_text" class="form-label">محتوى المنشور:</label>
+                <textarea name="post_text" class="form-control" rows="4" required>{{ post.content }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="post_type" class="form-label">نوع المنشور:</label>
+                <select name="post_type" class="form-select">
+                    <option value="text" {% if post.post_type == 'text' %}selected{% endif %}>نصي</option>
+                    <option value="image" {% if post.post_type == 'image' %}selected{% endif %}>صورة</option>
+                    <option value="video" {% if post.post_type == 'video' %}selected{% endif %}>فيديو</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">استبدال الملف (اختياري):</label>
+                <input type="file" name="post_file" class="form-control">
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-success px-4">💾 حفظ</button>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4">❌ إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

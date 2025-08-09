@@ -1,0 +1,90 @@
+
+/* تحسينات للصور الشخصية القابلة للنقر */
+.clickable-avatar {
+    transition: all 0.3s ease !important;
+    position: relative !important;
+}
+
+.clickable-avatar:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+    border-color: #667eea !important;
+}
+
+.clickable-avatar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.clickable-avatar:hover::after {
+    opacity: 1;
+}
+
+/* تحسين الأسماء القابلة للنقر */
+.hover-underline {
+    transition: all 0.3s ease !important;
+    position: relative !important;
+}
+
+.hover-underline:hover {
+    color: #667eea !important;
+    transform: translateX(-2px) !important;
+}
+
+.hover-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+}
+
+.hover-underline:hover::after {
+    width: 100%;
+}
+
+/* تحسين تأثير النقر */
+.clickable-avatar:active {
+    transform: scale(0.95) !important;
+}
+
+/* تحسين tooltip للصور */
+.clickable-avatar[title]:hover::before {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    animation: tooltipFadeIn 0.3s ease forwards;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}

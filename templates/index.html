@@ -1,0 +1,1010 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    {% if 'user_id' in session %}
+    <!-- بطاقة إنشاء منشور -->
+    <div class="create-post-card mb-4">
+        <div class="card-header d-flex align-items-center">
+            {% if user.profile_pic and user.profile_pic != 'default.png' %}
+                <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_pic) }}" 
+                     alt="صورة {{ user.full_name }}" 
+                     class="avatar me-3 rounded-circle"
+                     style="width: 52px; height: 52px; object-fit: cover;">
+            {% else %}
+                <div class="avatar me-3">{{ user.username[0].upper() }}</div>
+            {% endif %}
+            <div>
+                <h3 class="mb-0">{{ user.full_name }}</h3>
+                <p class="mb-0 text-muted">ماذا تريد أن تنشر اليوم؟</p>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('create_post') }}" enctype="multipart/form-data">
+            <div class="mb-3">
+                <select name="post_type" id="postType" class="form-select" required>
+                    <option value="text">نص</option>
+                    <option value="image">صورة</option>
+                    <option value="video">فيديو</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <textarea name="post_text" class="form-control" placeholder="اكتب منشورك هنا..." required rows="4"></textarea>
+            </div>
+            <div id="mediaInputGroup" class="mb-3" style="display: none;">
+                <div class="file-input-container">
+                    <label class="btn btn-outline-primary file-input-label">
+                        <i class="fas fa-cloud-upload-alt me-2"></i>
+                        اختر ملفات (حد أقصى 5 ملفات)
+                        <input type="file" id="postFile" name="post_files" accept="image/*,video/*" multiple style="display: none;">
+                    </label>
+                    <div class="mt-2">
+                        <small class="text-muted">يمكنك اختيار حتى 5 صور أو فيديوهات (حد أقصى 20 ميجا لكل ملف)</small>
+                    </div>
+                    <div id="selectedFiles" class="mt-3"></div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-paper-plane me-2"></i> نشر
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- عرض المنشورات -->
+    {% if posts %}
+        {% for post in posts %}
+        <div class="post card mb-4" data-post-id="{{ post.id }}">
+            <div class="card-header position-relative">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center">
+                        <a href="{{ url_for('profile', username=post.author.username) }}" class="text-decoration-none">
+                            {% if post.author.profile_pic and post.author.profile_pic != 'default.png' %}
+                                <img src="{{ url_for('static', filename='uploads/profiles/' + post.author.profile_pic) }}" 
+                                     alt="صورة {{ post.author.full_name }}" 
+                                     class="avatar me-3 rounded-circle clickable-avatar"
+                                     style="width: 52px; height: 52px; object-fit: cover; cursor: pointer;"
+                                     title="عرض الملف الشخصي لـ {{ post.author.full_name }}">
+                            {% else %}
+                                <div class="avatar me-3 clickable-avatar" 
+                                     style="cursor: pointer;"
+                                     title="عرض الملف الشخصي لـ {{ post.author.full_name }}">
+                                    {{ post.author.username[0].upper() }}
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div class="post-user ms-3">
+                            <a href="{{ url_for('profile', username=post.author.username) }}" class="text-decoration-none">
+                                <h4 class="mb-1 text-white hover-underline">{{ post.author.full_name }}</h4>
+                            </a>
+                            <p class="mb-0 text-muted small">{{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                    {% if post.author.id != user.id %}
+                    <div class="me-5">
+                        <a href="{{ url_for('chat', user_id=post.author.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- زر التلات نقط أعلى اليسار -->
+                {% if post.author.id == user.id %}
+                <div class="dropdown position-absolute top-0 start-0 m-2">
+                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-start text-start">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('edit_post', post_id=post.id) }}">
+                                <i class="fas fa-edit me-1"></i> تعديل
+                            </a>
+                        </li>
+                        <li>
+                            <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}"
+                                  onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                                <button class="dropdown-item text-danger" type="submit">
+                                    <i class="fas fa-trash me-1"></i> حذف
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <div class="post-content mb-3">
+                    <p class="mb-3">{{ post.content }}</p>
+                    {% if post.media_path and (post.post_type == 'image' or post.post_type == 'video') %}
+                        <div class="post-media mt-3">
+                            {% if post.post_type == 'image' %}
+                                <img src="{{ url_for('static', filename=post.media_path) }}"
+                                     class="img-fluid rounded"
+                                     alt="صورة المنشور">
+                            {% else %}
+                                <video controls class="w-100 rounded">
+                                    <source src="{{ url_for('static', filename=post.media_path) }}" type="video/mp4">
+                                    متصفحك لا يدعم تشغيل الفيديو.
+                                </video>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="post-stats d-flex justify-content-between text-muted mb-3">
+                    <span><i class="fas fa-heart me-1"></i> {{ post.likes_count }} إعجاب</span>
+                    <span><i class="fas fa-comment me-1"></i> {{ post.comments_count }} تعليق</span>
+                    <span><i class="fas fa-share me-1"></i> {{ post.shares }} مشاركة</span>
+                </div>
+
+                <div class="post-actions d-flex justify-content-between border-top border-bottom py-2">
+                    <button class="action-btn like-btn btn btn-link text-decoration-none {% if post.liked_by_current %}liked text-primary{% endif %}"
+                            data-post-id="{{ post.id }}">
+                        <i class="far fa-heart me-1"></i> أعجبني
+                    </button>
+                    <button type="button" class="action-btn comment-btn btn btn-link text-decoration-none"
+                            data-post-id="{{ post.id }}">
+                        <i class="far fa-comment me-1"></i> تعليق
+                    </button>
+                    <button class="action-btn share-btn btn btn-link text-decoration-none"
+                            data-post-id="{{ post.id }}">
+                        <i class="far fa-share-square me-1"></i> مشاركة
+                    </button>
+                </div>
+
+                <!-- قسم التعليقات - مخفي -->
+                <div class="comments-section mt-3" id="comments-{{ post.id }}" style="display: none;"
+                     data-post-id="{{ post.id }}">
+                    <div class="comments-list mb-3">
+                        {% for comment in post.comments if not comment.parent_id %}
+                            <div class="comment mb-3" id="comment-{{ comment.id }}">
+                                <div class="d-flex">
+                                    <a href="{{ url_for('profile', username=comment.author.username) }}" class="text-decoration-none">
+                                        {% if comment.author.profile_pic and comment.author.profile_pic != 'default.png' %}
+                                            <img src="{{ url_for('static', filename='uploads/profiles/' + comment.author.profile_pic) }}" 
+                                                 alt="صورة {{ comment.author.full_name }}" 
+                                                 class="avatar small me-3 rounded-circle clickable-avatar"
+                                                 style="width: 32px; height: 32px; object-fit: cover; cursor: pointer;"
+                                                 title="عرض الملف الشخصي لـ {{ comment.author.full_name }}">
+                                        {% else %}
+                                            <div class="avatar small me-3 clickable-avatar" 
+                                                 style="cursor: pointer;"
+                                                 title="عرض الملف الشخصي لـ {{ comment.author.full_name }}">
+                                                {{ comment.author.username[0].upper() }}
+                                            </div>
+                                        {% endif %}
+                                    </a>
+                                    <div class="flex-grow-1 ms-2">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{{ url_for('profile', username=comment.author.username) }}" class="text-decoration-none">
+                                                <h5 class="mb-1 text-dark hover-underline">{{ comment.author.full_name }}</h5>
+                                            </a>
+                                            <small class="text-muted">{{ comment.timestamp.strftime('%H:%M') }}</small>
+                                        </div>
+                                        <p class="mb-1 mt-1">{{ comment.content }}</p>
+                                        <div class="comment-actions">
+                                            <button class="btn btn-sm btn-link like-btn {% if comment.liked_by_current %}liked text-primary{% endif %}"
+                                                    data-comment-id="{{ comment.id }}">
+                                                <i class="far fa-heart me-1"></i>
+                                                <span class="likes-count">{{ comment.likes_count }}</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-link reply-btn"
+                                                    data-comment-id="{{ comment.id }}">
+                                                <i class="fas fa-reply me-1"></i> رد
+                                            </button>
+                                            {% if 'user_id' in session and comment.user_id == session['user_id'] %}
+                                                <button class="btn btn-sm btn-link edit-comment-btn text-warning"
+                                                        data-comment-id="{{ comment.id }}">
+                                                    <i class="fas fa-edit me-1"></i> تعديل
+                                                </button>
+                                                <button class="btn btn-sm btn-link delete-comment-btn text-danger"
+                                                        data-comment-id="{{ comment.id }}">
+                                                    <i class="fas fa-trash me-1"></i> حذف
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- الردود -->
+                                <div class="replies ms-5 mt-2">
+                                    {% for reply in comment.replies %}
+                                        <div class="comment reply mb-2" id="comment-{{ reply.id }}">
+                                            <div class="d-flex">
+                                                <a href="{{ url_for('profile', username=reply.author.username) }}" class="text-decoration-none">
+                                                    {% if reply.author.profile_pic and reply.author.profile_pic != 'default.png' %}
+                                                        <img src="{{ url_for('static', filename='uploads/profiles/' + reply.author.profile_pic) }}" 
+                                                             alt="صورة {{ reply.author.full_name }}" 
+                                                             class="avatar small me-3 rounded-circle clickable-avatar"
+                                                             style="width: 28px; height: 28px; object-fit: cover; cursor: pointer;"
+                                                             title="عرض الملف الشخصي لـ {{ reply.author.full_name }}">
+                                                    {% else %}
+                                                        <div class="avatar small me-3 clickable-avatar" 
+                                                             style="cursor: pointer;"
+                                                             title="عرض الملف الشخصي لـ {{ reply.author.full_name }}">
+                                                            {{ reply.author.username[0].upper() }}
+                                                        </div>
+                                                    {% endif %}
+                                                </a>
+                                                <div class="flex-grow-1 ms-2">
+                                                    <div class="d-flex justify-content-between">
+                                                        <a href="{{ url_for('profile', username=reply.author.username) }}" class="text-decoration-none">
+                                                            <h5 class="mb-1 text-dark hover-underline">{{ reply.author.full_name }}</h5>
+                                                        </a>
+                                                        <small class="text-muted">{{ reply.timestamp.strftime('%H:%M') }}</small>
+                                                    </div>
+                                                    <p class="mb-1 mt-1">{{ reply.content }}</p>
+                                                    <div class="comment-actions">
+                                                        <button class="btn btn-sm btn-link like-btn {% if reply.liked_by_current %}liked text-primary{% endif %}"
+                                                                data-comment-id="{{ reply.id }}">
+                                                            <i class="far fa-heart me-1"></i>
+                                                            <span class="likes-count">{{ reply.likes_count }}</span>
+                                                        </button>
+                                                        {% if 'user_id' in session and reply.user_id == session['user_id'] %}
+                                                            <button class="btn btn-sm btn-link edit-comment-btn text-warning"
+                                                                    data-comment-id="{{ reply.id }}">
+                                                                <i class="fas fa-edit me-1"></i> تعديل
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link delete-comment-btn text-danger"
+                                                                    data-comment-id="{{ reply.id }}">
+                                                                <i class="fas fa-trash me-1"></i> حذف
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="comments-form-container">
+                        <form class="comment-form" data-post-id="{{ post.id }}">
+                            <div class="mb-3">
+                                <textarea class="form-control" placeholder="اكتب تعليقك هنا..." required rows="3"></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i> إرسال
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-posts text-center py-5">
+            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+            <h3>مفيش منشورات</h3>
+            <p>كن أول من ينشر وشارك أفكارك مع الآخرين</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- سكربت لفتح/غلق التعليقات وإدارة أنواع المنشورات -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // فتح/إغلاق قسم التعليقات
+    document.querySelectorAll('.comment-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const postId = this.dataset.postId;
+            const commentsDiv = document.getElementById('comments-' + postId);
+            
+            if (!commentsDiv) return;
+            
+            // إغلاق جميع التعليقات الأخرى أولاً
+            document.querySelectorAll('.comments-section').forEach(section => {
+                if (section.id !== 'comments-' + postId) {
+                    section.classList.remove('show');
+                }
+            });
+            
+            // تبديل عرض التعليقات الحالية
+            if (!commentsDiv.classList.contains('show')) {
+                commentsDiv.classList.add('show');
+                
+                // التمرير إلى التعليقات بعد تأخير قصير
+                setTimeout(() => {
+                    commentsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            } else {
+                commentsDiv.classList.remove('show');
+            }
+        });
+    });
+
+    // إظهار/إخفاء حقل الميديا حسب نوع المنشور
+    const postTypeSelect = document.getElementById('postType');
+    const mediaInputGroup = document.getElementById('mediaInputGroup');
+
+    if (postTypeSelect && mediaInputGroup) {
+        postTypeSelect.addEventListener('change', function() {
+            mediaInputGroup.style.display = this.value === 'text' ? 'none' : 'block';
+        });
+    }
+
+    // معالجة الملفات المتعددة
+    const postFileInput = document.getElementById('postFile');
+    const selectedFilesDiv = document.getElementById('selectedFiles');
+
+    if (postFileInput) {
+        postFileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+
+            // التحقق من عدد الملفات
+            if (files.length > 5) {
+                alert('يمكنك اختيار حد أقصى 5 ملفات');
+                this.value = '';
+                selectedFilesDiv.innerHTML = '';
+                return;
+            }
+
+            // التحقق من حجم كل ملف
+            for (let file of files) {
+                if (file.size > 20 * 1024 * 1024) { // 20MB
+                    alert(`الملف "${file.name}" يتجاوز الحد الأقصى 20 ميجابايت`);
+                    this.value = '';
+                    selectedFilesDiv.innerHTML = '';
+                    return;
+                }
+            }
+
+            // عرض معاينة الملفات
+            displaySelectedFiles(files);
+        });
+    }
+
+    function displaySelectedFiles(files) {
+        selectedFilesDiv.innerHTML = '';
+
+        if (files.length === 0) return;
+
+        const filesContainer = document.createElement('div');
+        filesContainer.className = 'row g-2';
+
+        files.forEach((file, index) => {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'col-6 col-md-4';
+
+            const fileCard = document.createElement('div');
+            fileCard.className = 'card position-relative';
+            fileCard.style.height = '120px';
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.className = 'card-img-top h-100';
+                img.style.objectFit = 'cover';
+                img.src = URL.createObjectURL(file);
+                fileCard.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.className = 'card-img-top h-100';
+                video.style.objectFit = 'cover';
+                video.src = URL.createObjectURL(file);
+                video.muted = true;
+                fileCard.appendChild(video);
+
+                const playIcon = document.createElement('div');
+                playIcon.className = 'position-absolute top-50 start-50 translate-middle';
+                playIcon.innerHTML = '<i class="fas fa-play-circle fa-2x text-white"></i>';
+                fileCard.appendChild(playIcon);
+            }
+
+            // إضافة زر الحذف
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 m-1';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.onclick = () => removeFile(index);
+            fileCard.appendChild(removeBtn);
+
+            // إضافة اسم الملف
+            const fileName = document.createElement('div');
+            fileName.className = 'position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white p-1';
+            fileName.style.fontSize = '0.7rem';
+            fileName.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+            fileCard.appendChild(fileName);
+
+            fileDiv.appendChild(fileCard);
+            filesContainer.appendChild(fileDiv);
+        });
+
+        selectedFilesDiv.appendChild(filesContainer);
+    }
+
+    function removeFile(index) {
+        const input = document.getElementById('postFile');
+        const dt = new DataTransfer();
+        const files = Array.from(input.files);
+
+        files.splice(index, 1);
+
+        files.forEach(file => dt.items.add(file));
+        input.files = dt.files;
+
+        displaySelectedFiles(files);
+    }
+
+    // إدارة تعديل التعليقات
+    document.querySelectorAll('.edit-comment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            const commentDiv = document.getElementById(`comment-${commentId}`);
+            const commentText = commentDiv.querySelector('p').textContent;
+
+            // إنشاء نموذج التعديل
+            const editForm = document.createElement('div');
+            editForm.className = 'edit-comment-form mt-2';
+            editForm.innerHTML = `
+                <div class="mb-2">
+                    <textarea class="form-control" rows="2">${commentText}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-success save-edit-btn" data-comment-id="${commentId}">
+                        <i class="fas fa-save me-1"></i> حفظ
+                    </button>
+                    <button class="btn btn-sm btn-secondary cancel-edit-btn">
+                        <i class="fas fa-times me-1"></i> إلغاء
+                    </button>
+                </div>
+            `;
+
+            // إخفاء النص الأصلي وإظهار نموذج التعديل
+            const commentContent = commentDiv.querySelector('p');
+            const commentActions = commentDiv.querySelector('.comment-actions');
+
+            commentContent.style.display = 'none';
+            commentActions.style.display = 'none';
+            commentDiv.appendChild(editForm);
+
+            // معالجة حفظ التعديل
+            editForm.querySelector('.save-edit-btn').addEventListener('click', function() {
+                const newContent = editForm.querySelector('textarea').value;
+
+                fetch('/edit_comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `comment_id=${commentId}&content=${encodeURIComponent(newContent)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        commentContent.textContent = newContent;
+                        commentContent.style.display = 'block';
+                        commentActions.style.display = 'block';
+                        editForm.remove();
+                    } else {
+                        alert('حدث خطأ في التعديل');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ في التعديل');
+                });
+            });
+
+            // معالجة إلغاء التعديل
+            editForm.querySelector('.cancel-edit-btn').addEventListener('click', function() {
+                commentContent.style.display = 'block';
+                commentActions.style.display = 'block';
+                editForm.remove();
+            });
+        });
+    });
+
+    // إدارة حذف التعليقات
+    document.querySelectorAll('.delete-comment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+
+            if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) {
+                fetch('/delete_comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `comment_id=${commentId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const commentDiv = document.getElementById(`comment-${commentId}`);
+                        commentDiv.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            commentDiv.remove();
+                        }, 300);
+                    } else {
+                        alert('حدث خطأ في الحذف');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ في الحذف');
+                });
+            }
+        });
+    });
+
+    // إدارة النقر على زر الإعجاب للمنشور
+    document.querySelectorAll('.like-btn[data-post-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            // هنا سيتم إضافة كود AJAX لتحديث الإعجابات
+            this.classList.toggle('liked');
+            this.classList.toggle('text-primary');
+        });
+    });
+
+    // إدارة مشاركة المنشورات
+    document.querySelectorAll('.share-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const postContent = this.closest('.post').querySelector('.post-content').textContent;
+            const postUrl = window.location.origin + '/post/' + postId;
+
+            // إنشاء نافذة مشاركة
+            showShareModal(postId, postContent, postUrl);
+        });
+    });
+
+    // دالة إظهار نافذة المشاركة
+    function showShareModal(postId, content, url) {
+        // إنشاء modal للمشاركة
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'shareModal';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">مشاركة المنشور</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="share-options">
+                            <div class="row g-3">
+                                <div class="col-4">
+                                    <button class="btn btn-outline-primary w-100 share-option" data-platform="facebook">
+                                        <i class="fab fa-facebook-f mb-2"></i><br>
+                                        <small>فيسبوك</small>
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-outline-success w-100 share-option" data-platform="whatsapp">
+                                        <i class="fab fa-whatsapp mb-2"></i><br>
+                                        <small>واتساب</small>
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-outline-info w-100 share-option" data-platform="twitter">
+                                        <i class="fab fa-twitter mb-2"></i><br>
+                                        <small>تويتر</small>
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-outline-danger w-100 share-option" data-platform="instagram">
+                                        <i class="fab fa-instagram mb-2"></i><br>
+                                        <small>إنستغرام</small>
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-outline-dark w-100 share-option" data-platform="copy">
+                                        <i class="fas fa-copy mb-2"></i><br>
+                                        <small>نسخ الرابط</small>
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-outline-secondary w-100 share-option" data-platform="email">
+                                        <i class="fas fa-envelope mb-2"></i><br>
+                                        <small>إيميل</small>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // إظهار المودال
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+
+        // إضافة مستمعي الأحداث لأزرار المشاركة
+        modal.querySelectorAll('.share-option').forEach(shareBtn => {
+            shareBtn.addEventListener('click', function() {
+                const platform = this.dataset.platform;
+                shareToplatform(platform, content, url, postId);
+                bsModal.hide();
+            });
+        });
+
+        // إزالة المودال عند إغلاقه
+        modal.addEventListener('hidden.bs.modal', function() {
+            document.body.removeChild(modal);
+        });
+    }
+
+    // دالة المشاركة على المنصات المختلفة
+    function shareToplatform(platform, content, url, postId) {
+        const encodedContent = encodeURIComponent(content);
+        const encodedUrl = encodeURIComponent(url);
+
+        let shareUrl = '';
+
+        switch(platform) {
+            case 'facebook':
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedContent}`;
+                break;
+            case 'twitter':
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}&url=${encodedUrl}`;
+                break;
+            case 'whatsapp':
+                shareUrl = `https://wa.me/?text=${encodedContent}%20${encodedUrl}`;
+                break;
+            case 'instagram':
+                // Instagram لا يدعم المشاركة المباشرة، سننسخ النص
+                navigator.clipboard.writeText(content + ' ' + url).then(() => {
+                    alert('تم نسخ النص! يمكنك الآن لصقه في إنستغرام');
+                });
+                updateShareCount(postId);
+                return;
+            case 'copy':
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('تم نسخ الرابط بنجاح!');
+                });
+                updateShareCount(postId);
+                return;
+            case 'email':
+                shareUrl = `mailto:?subject=مشاركة من موقع تواصل&body=${encodedContent}%0D%0A%0D%0A${encodedUrl}`;
+                break;
+        }
+
+        if (shareUrl) {
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+            updateShareCount(postId);
+        }
+    }
+
+    // دالة تحديث عداد المشاركات
+    function updateShareCount(postId) {
+        fetch('/share_post', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `post_id=${postId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // تحديث عداد المشاركات في الواجهة
+                const shareCountElement = document.querySelector(`[data-post-id="${postId}"]`).closest('.post').querySelector('.post-stats span:nth-child(3)');
+                if (shareCountElement) {
+                    shareCountElement.innerHTML = `<i class="fas fa-share me-1"></i> ${data.shares_count} مشاركة`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // إدارة النقر على زر الإعجاب للتعليق
+    document.querySelectorAll('.like-btn[data-comment-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            // هنا سيتم إضافة كود AJAX لتحديث إعجابات التعليق
+            this.classList.toggle('liked');
+            this.classList.toggle('text-primary');
+        });
+    });
+
+    // إدارة إظهار/إخفاء التعليقات
+    document.querySelectorAll('.comment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const commentsSection = document.getElementById(`comments-${postId}`);
+
+            if (commentsSection.style.display === 'none') {
+                commentsSection.style.display = 'block';
+                loadComments(postId);
+            } else {
+                commentsSection.style.display = 'none';
+            }
+        });
+    });
+
+    // إدارة إرسال التعليقات
+    document.querySelectorAll('.comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const postId = this.dataset.postId;
+            const textarea = this.querySelector('textarea');
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('يرجى كتابة تعليق');
+                return;
+            }
+
+            // إرسال التعليق
+            fetch('/add_comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `post_id=${postId}&content=${encodeURIComponent(content)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // مسح النموذج
+                    textarea.value = '';
+
+                    // إعادة تحميل التعليقات
+                    loadComments(postId);
+
+                    // تحديث عداد التعليقات
+                    updateCommentsCount(postId);
+                } else {
+                    alert(data.message || 'حدث خطأ أثناء إضافة التعليق');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إضافة التعليق');
+            });
+        });
+    });
+
+    // دالة تحميل التعليقات
+    function loadComments(postId) {
+        fetch(`/get_comments/${postId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                displayComments(postId, data.comments);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading comments:', error);
+        });
+    }
+
+    // دالة عرض التعليقات
+    function displayComments(postId, comments) {
+        const commentsList = document.querySelector(`#comments-${postId} .comments-list`);
+
+        if (comments.length === 0) {
+            commentsList.innerHTML = '<p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>';
+            return;
+        }
+
+        let commentsHtml = '';
+
+        comments.forEach(comment => {
+            commentsHtml += `
+                <div class="comment mb-3" id="comment-${comment.id}">
+                    <div class="d-flex">
+                        <div class="avatar small me-3">${comment.user_name.charAt(0).toUpperCase()}</div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-0">${comment.user_name}</h5>
+                                <small class="text-muted">${comment.timestamp}</small>
+                            </div>
+                            <p class="mb-1 mt-1">${comment.content}</p>
+                            <div class="comment-actions">
+                                <button class="btn btn-sm btn-link like-btn" data-comment-id="${comment.id}">
+                                    <i class="far fa-heart me-1"></i>
+                                    <span class="likes-count">0</span>
+                                </button>
+                                <button class="btn btn-sm btn-link reply-btn" data-comment-id="${comment.id}">
+                                    <i class="fas fa-reply me-1"></i> رد
+                                </button>`;
+
+            // إضافة زر الحذف إذا كان المستخدم هو صاحب التعليق
+            if (comment.user_id === {{ session.get('user_id', 'null') }}) {
+                commentsHtml += `
+                                <button class="btn btn-sm btn-link text-danger delete-comment-btn" data-comment-id="${comment.id}">
+                                    <i class="fas fa-trash me-1"></i> حذف
+                                </button>`;
+            }
+
+            commentsHtml += `
+                            </div>
+                        </div>
+                    </div>`;
+
+            // إضافة الردود إذا كانت موجودة
+            if (comment.replies && comment.replies.length > 0) {
+                commentsHtml += `<div class="replies ms-5 mt-2">`;
+                comment.replies.forEach(reply => {
+                    commentsHtml += `
+                        <div class="comment reply mb-2" id="comment-${reply.id}">
+                            <div class="d-flex">
+                                <div class="avatar small me-3">${reply.user_name.charAt(0).toUpperCase()}</div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="mb-0">${reply.user_name}</h5>
+                                        <small class="text-muted">${reply.timestamp}</small>
+                                    </div>
+                                    <p class="mb-1 mt-1">${reply.content}</p>
+                                    <div class="comment-actions">
+                                        <button class="btn btn-sm btn-link like-btn" data-comment-id="${reply.id}">
+                                            <i class="far fa-heart me-1"></i>
+                                            <span class="likes-count">0</span>
+                                        </button>`;
+
+                    // إضافة زر الحذف للرد إذا كان المستخدم هو صاحبه
+                    if (reply.user_id === {{ session.get('user_id', 'null') }}) {
+                        commentsHtml += `
+                                        <button class="btn btn-sm btn-link text-danger delete-comment-btn" data-comment-id="${reply.id}">
+                                            <i class="fas fa-trash me-1"></i> حذف
+                                        </button>`;
+                    }
+
+                    commentsHtml += `
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                commentsHtml += `</div>`;
+            }
+
+            commentsHtml += `</div>`;
+        });
+
+        commentsList.innerHTML = commentsHtml;
+
+        // إضافة مستمعي الأحداث للأزرار الجديدة
+        addCommentEventListeners();
+    }
+
+    // دالة تحديث عداد التعليقات
+    function updateCommentsCount(postId) {
+        fetch(`/get_comments/${postId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const commentsCountSpan = document.querySelector(`[data-post-id="${postId}"]`).closest('.post').querySelector('.post-stats span:nth-child(2)');
+                if (commentsCountSpan) {
+                    commentsCountSpan.innerHTML = `<i class="fas fa-comment me-1"></i> ${data.comments.length} تعليق`;
+                }
+            }
+        });
+    }
+
+    // دالة إضافة مستمعي الأحداث للتعليقات الجديدة
+    function addCommentEventListeners() {
+        // حذف التعليقات
+        document.querySelectorAll('.delete-comment-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) {
+                    const commentId = this.dataset.commentId;
+
+                    fetch(`/delete_comment/${commentId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            document.getElementById(`comment-${commentId}`).remove();
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء حذف التعليق');
+                    });
+                }
+            });
+        });
+
+        // إعجاب التعليقات
+        document.querySelectorAll('.like-btn[data-comment-id]').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+                this.classList.toggle('liked');
+                this.classList.toggle('text-primary');
+            });
+        });
+
+        // الرد على التعليقات
+        document.querySelectorAll('.reply-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+                const comment = document.getElementById(`comment-${commentId}`);
+
+                // إزالة نماذج الرد الموجودة
+                const existingForms = document.querySelectorAll('.reply-form');
+                existingForms.forEach(form => form.remove());
+
+                // إنشاء نموذج رد جديد
+                const replyForm = document.createElement('div');
+                replyForm.className = 'reply-form mt-2 ms-5';
+                replyForm.innerHTML = `
+                    <form class="reply-comment-form" data-parent-id="${commentId}">
+                        <div class="mb-2">
+                            <textarea class="form-control" placeholder="اكتب ردك هنا..." required rows="2"></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-sm btn-secondary me-2 cancel-reply">إلغاء</button>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-reply me-1"></i> رد
+                            </button>
+                        </div>
+                    </form>
+                `;
+
+                comment.appendChild(replyForm);
+
+                // التركيز على textarea
+                replyForm.querySelector('textarea').focus();
+
+                // إضافة مستمع لزر الإلغاء
+                replyForm.querySelector('.cancel-reply').addEventListener('click', function() {
+                    replyForm.remove();
+                });
+
+                // إضافة مستمع لإرسال الرد
+                replyForm.querySelector('.reply-comment-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const textarea = this.querySelector('textarea');
+                    const content = textarea.value.trim();
+                    const parentId = this.dataset.parentId;
+                    const postId = comment.closest('.comments-section').dataset.postId;
+
+                    if (!content) {
+                        alert('يرجى كتابة رد');
+                        return;
+                    }
+
+                    // إرسال الرد
+                    fetch('/add_comment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `post_id=${postId}&content=${encodeURIComponent(content)}&parent_id=${parentId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // إزالة نموذج الرد
+                            replyForm.remove();
+
+                            // إعادة تحميل التعليقات لإظهار الرد الجديد
+                            loadComments(postId);
+
+                            // تحديث عداد التعليقات
+                            updateCommentsCount(postId);
+                        } else {
+                            alert(data.message || 'حدث خطأ أثناء إضافة الرد');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء إضافة الرد');
+                    });
+                });
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

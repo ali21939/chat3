@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="mb-4 text-center">نتائج البحث عن: <span class="text-primary">"{{ query }}"</span></h3>
+
+    {% if users %}
+        <!-- قسم المستخدمين -->
+        <div class="mb-4">
+            <h5 class="mb-3">
+                <i class="fas fa-users me-2"></i>المستخدمون ({{ users|length }})
+            </h5>
+            
+            {% for found_user in users %}
+                <div class="card border-0 shadow-sm mb-3 p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="{{ url_for('profile', username=found_user.username) }}" class="text-decoration-none">
+                            {% if found_user.profile_pic and found_user.profile_pic != 'default.png' %}
+                                <img src="{{ url_for('static', filename='uploads/profiles/' + found_user.profile_pic) }}" 
+                                     alt="صورة {{ found_user.full_name }}" 
+                                     class="rounded-circle"
+                                     style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                                <div class="avatar">{{ found_user.username[0].upper() }}</div>
+                            {% endif %}
+                        </a>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ found_user.full_name }}</h6>
+                            <p class="text-muted mb-0">@{{ found_user.username }}</p>
+                        </div>
+                        {% if 'user_id' in session and session['user_id'] != found_user.id %}
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('profile', username=found_user.username) }}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user me-1"></i>الملف الشخصي
+                            </a>
+                            <a href="{{ url_for('chat', user_id=found_user.id) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-envelope me-1"></i>راسل
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+        <!-- المنشورات -->
+        {% if posts %}
+            <div class="mb-3">
+                <h5 class="mb-3">المنشورات</h5>
+                {% for post in posts %}
+                    <div class="post card mb-4" data-post-id="{{ post.id }}">
+                        <div class="card-header position-relative">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex align-items-center">
+                                    <a href="{{ url_for('profile', username=post.author.username) }}" class="text-decoration-none">
+                                        {% if post.author.profile_pic and post.author.profile_pic != 'default.png' %}
+                                            <img src="{{ url_for('static', filename='uploads/profiles/' + post.author.profile_pic) }}" 
+                                                 alt="صورة {{ post.author.full_name }}" 
+                                                 class="avatar me-3 rounded-circle clickable-avatar"
+                                                 style="width: 52px; height: 52px; object-fit: cover; cursor: pointer;"
+                                                 title="عرض الملف الشخصي لـ {{ post.author.full_name }}">
+                                        {% else %}
+                                            <div class="avatar me-3 clickable-avatar" 
+                                                 style="cursor: pointer;"
+                                                 title="عرض الملف الشخصي لـ {{ post.author.full_name }}">
+                                                {{ post.author.username[0].upper() }}
+                                            </div>
+                                        {% endif %}
+                                    </a>
+                                    <div class="post-user">
+                                        <a href="{{ url_for('profile', username=post.author.username) }}" class="text-decoration-none">
+                                            <h4 class="mb-0 text-white hover-underline">{{ post.author.full_name }}</h4>
+                                        </a>
+                                        <p class="mb-0 text-muted small">{{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                                    </div>
+                                </div>
+                                {% if 'user_id' in session and session['user_id'] != post.author.id %}
+                                    <a href="{{ url_for('chat', user_id=post.author.id) }}" 
+                                       class="btn btn-outline-light btn-sm rounded-pill" 
+                                       title="راسل {{ post.author.full_name }}">
+                                        <i class="fas fa-envelope" style="font-size: 1.1rem;"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="post-content">
+                                <p class="mb-3">{{ post.content }}</p>
+
+                                <!-- عرض الوسائط إن وجدت -->
+                                {% if post.media_path %}
+                                    <div class="post-media mb-3">
+                                        {% if post.post_type == 'image' %}
+                                            <img src="{{ url_for('static', filename=post.media_path) }}" 
+                                                 alt="صورة المنشور" 
+                                                 class="img-fluid rounded">
+                                        {% elif post.post_type == 'video' %}
+                                            <video controls class="w-100 rounded">
+                                                <source src="{{ url_for('static', filename=post.media_path) }}" type="video/mp4">
+                                                متصفحك لا يدعم تشغيل الفيديو.
+                                            </video>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="post-stats d-flex justify-content-between text-muted mb-3">
+                                <span><i class="fas fa-heart me-1"></i> {{ post.likes.count() }} إعجاب</span>
+                                <span><i class="fas fa-comment me-1"></i> {{ post.comments.count() }} تعليق</span>
+                                <span><i class="fas fa-share me-1"></i> {{ post.shares }} مشاركة</span>
+                            </div>
+
+                            <div class="post-actions d-flex justify-content-between border-top border-bottom py-2">
+                                {% if 'user_id' in session %}
+                                    <button class="action-btn like-btn btn btn-link text-decoration-none"
+                                            data-post-id="{{ post.id }}">
+                                        <i class="far fa-heart me-1"></i> أعجبني
+                                    </button>
+                                    <button type="button" class="action-btn comment-btn btn btn-link text-decoration-none"
+                                            data-post-id="{{ post.id }}">
+                                        <i class="far fa-comment me-1"></i> تعليق
+                                    </button>
+                                {% else %}
+                                    <a href="{{ url_for('login') }}" class="action-btn btn btn-link text-decoration-none">
+                                        <i class="far fa-heart me-1"></i> أعجبني
+                                    </a>
+                                    <a href="{{ url_for('login') }}" class="action-btn btn btn-link text-decoration-none">
+                                        <i class="far fa-comment me-1"></i> تعليق
+                                    </a>
+                                {% endif %}
+                                <button class="action-btn share-btn btn btn-link text-decoration-none"
+                                        data-post-id="{{ post.id }}">
+                                    <i class="far fa-share-square me-1"></i> مشاركة
+                                </button>
+                            </div>
+
+                            <!-- قسم التعليقات -->
+                            {% if 'user_id' in session %}
+                                <div class="comments-section mt-3" id="comments-{{ post.id }}" style="display: none;"
+                                     data-post-id="{{ post.id }}">
+                                    <div class="comments-list mb-3">
+                                        <!-- سيتم تحميل التعليقات هنا بـ JavaScript -->
+                                    </div>
+                                    <div class="comments-form-container">
+                                        <form class="comment-form" data-post-id="{{ post.id }}">
+                                            <div class="mb-3">
+                                                <textarea class="form-control" placeholder="اكتب تعليقك هنا..." required rows="3"></textarea>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane me-1"></i> إرسال
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-file-alt me-2"></i>
+                لا توجد منشورات تحتوي على "<strong>{{ query }}</strong>"
+            </div>
+        {% endif %}
+
+        {% if not users and not posts %}
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-search me-2"></i>
+                لم يتم العثور على نتائج لـ "<strong>{{ query }}</strong>"
+                <br>
+                <small class="text-muted mt-2">جرب البحث بكلمات مختلفة أو تأكد من الإملاء</small>
+            </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="alert alert-secondary text-center">
+            <i class="fas fa-search me-2"></i>
+            اكتب شيئاً للبحث عنه...
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary), var(--success));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+</style>
+
+<script>
+// JavaScript للتفاعل في صفحة البحث
+document.addEventListener('DOMContentLoaded', function () {
+    // فتح/إغلاق قسم التعليقات
+    document.querySelectorAll('.comment-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const postId = this.dataset.postId;
+            const commentsDiv = document.getElementById('comments-' + postId);
+
+            if (!commentsDiv) return;
+
+            // تبديل عرض التعليقات
+            if (commentsDiv.style.display === 'none') {
+                commentsDiv.style.display = 'block';
+                loadComments(postId);
+            } else {
+                commentsDiv.style.display = 'none';
+            }
+        });
+    });
+
+    // إدارة النقر على زر الإعجاب
+    document.querySelectorAll('.like-btn[data-post-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            this.classList.toggle('liked');
+            this.classList.toggle('text-primary');
+        });
+    });
+
+    // إدارة المشاركة
+    document.querySelectorAll('.share-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const postContent = this.closest('.post').querySelector('.post-content').textContent;
+            const postUrl = window.location.origin + '/post/' + postId;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'مشاركة منشور',
+                    text: postContent,
+                    url: postUrl
+                });
+            } else {
+                navigator.clipboard.writeText(postUrl).then(() => {
+                    alert('تم نسخ الرابط بنجاح!');
+                });
+            }
+        });
+    });
+
+    // دالة تحميل التعليقات
+    function loadComments(postId) {
+        fetch(`/get_comments/${postId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                displayComments(postId, data.comments);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // دالة عرض التعليقات
+    function displayComments(postId, comments) {
+        const commentsList = document.querySelector(`#comments-${postId} .comments-list`);
+
+        if (comments.length === 0) {
+            commentsList.innerHTML = '<p class="text-muted text-center">لا توجد تعليقات حتى الآن</p>';
+            return;
+        }
+
+        let commentsHtml = '';
+
+        comments.forEach(comment => {
+            commentsHtml += `
+                <div class="comment mb-3">
+                    <div class="d-flex">
+                        <div class="avatar small me-3">${comment.user_name.charAt(0).toUpperCase()}</div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-0">${comment.user_name}</h5>
+                            <p class="mb-1">${comment.content}</p>
+                            <small class="text-muted">${comment.timestamp}</small>
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+        commentsList.innerHTML = commentsHtml;
+    }
+});
+</script>
+{% endblock %}

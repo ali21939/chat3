@@ -1,0 +1,29 @@
+# متطلبات منصة تواصل - الإصدار المحسن
+
+# إطار العمل الأساسي
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# قاعدة البيانات
+Flask-SQLAlchemy==3.0.5
+SQLAlchemy==2.0.21
+
+# معالجة الملفات والصور
+Pillow==10.0.1
+
+# الأمان والتحقق
+email-validator==2.0.0
+flask-limiter==3.5.0
+
+# للتطبيق المحمول
+Flask-CORS==4.0.0
+PyJWT==2.8.0
+
+# أدوات إضافية
+itsdangerous==2.1.2
+click==8.1.7
+Jinja2==3.1.2
+MarkupSafe==2.1.3
+
+# للتطوير (اختياري)
+python-dotenv==1.0.0

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-sign-in-alt"></i>
+            <h2>تسجيل الدخول</h2>
+            <p>أدخل بياناتك للوصول إلى حسابك</p>
+        </div>
+
+        <!-- ✅ رسائل الفلاش -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} flash-message" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="username">اسم المستخدم:</label>
+                <input type="text" id="username" name="username" required>
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" name="password" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember">
+                    تذكرني
+                </label>
+                <a href="{{ url_for('forgot_password') }}" class="forgot-password">نسيت كلمة المرور؟</a>
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </button>
+
+            <div class="auth-footer">
+                ليس لديك حساب؟ <a href="{{ url_for('signup') }}">إنشاء حساب جديد</a>
+            </div>
+        </form>
+    </div>
+
+
+</div>
+
+<!-- ✅ سكريبت إخفاء رسالة الفلاش بعد 3 ثواني -->
+<script>
+    setTimeout(function() {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(function(msg) {
+            msg.style.transition = "opacity 0.5s ease-out";
+            msg.style.opacity = "0";
+            setTimeout(() => msg.remove(), 500);
+        });
+    }, 3000);
+</script>
+{% endblock %}

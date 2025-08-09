@@ -1,0 +1,171 @@
+
+/* تحسينات نموذج إنشاء المنشور */
+.create-post-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa) !important;
+    border: none !important;
+    border-radius: 25px !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+    margin-bottom: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.create-post-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+}
+
+.create-post-card .card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    padding: 2rem !important;
+    color: white !important;
+}
+
+.create-post-card .card-body {
+    padding: 2rem !important;
+}
+
+/* تحسين textarea */
+.create-post-card textarea {
+    border: 2px solid #e9ecef !important;
+    border-radius: 20px !important;
+    padding: 1.5rem !important;
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+    transition: all 0.3s ease !important;
+    resize: none !important;
+    min-height: 120px !important;
+}
+
+.create-post-card textarea:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* تحسين select */
+.create-post-card select {
+    border: 2px solid #e9ecef !important;
+    border-radius: 15px !important;
+    padding: 1rem 1.5rem !important;
+    font-size: 1rem !important;
+    background: white !important;
+    transition: all 0.3s ease !important;
+}
+
+.create-post-card select:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* تحسين أزرار رفع الملفات */
+.file-input-label {
+    background: linear-gradient(135deg, #f093fb, #f5576c) !important;
+    border: none !important;
+    border-radius: 20px !important;
+    padding: 1rem 2rem !important;
+    font-weight: 600 !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+    cursor: pointer !important;
+}
+
+.file-input-label:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4) !important;
+    background: linear-gradient(135deg, #f5576c, #f093fb) !important;
+}
+
+/* تحسين زر الإرسال */
+.create-post-card .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    border-radius: 25px !important;
+    padding: 1rem 3rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+}
+
+.create-post-card .btn-primary:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4) !important;
+    background: linear-gradient(135deg, #764ba2, #667eea) !important;
+}
+
+.create-post-card .btn-primary:active {
+    transform: translateY(-1px) !important;
+}
+
+/* تحسين معاينة الملفات */
+#selectedFiles .card {
+    border: none !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+#selectedFiles .card:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+#selectedFiles .btn-danger {
+    border-radius: 50% !important;
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.8rem !important;
+}
+
+/* تحسين النصوص المساعدة */
+.create-post-card .text-muted {
+    color: #6c757d !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+/* تأثيرات خاصة */
+.create-post-card .form-label {
+    font-weight: 700 !important;
+    color: #495057 !important;
+    margin-bottom: 1rem !important;
+    font-size: 1.1rem !important;
+}
+
+/* انتقالات ناعمة */
+.create-post-card * {
+    transition: all 0.3s ease !important;
+}
+
+/* تحسين responsive */
+@media (max-width: 768px) {
+    .create-post-card {
+        margin-bottom: 1.5rem !important;
+        border-radius: 20px !important;
+    }
+
+    .create-post-card .card-header,
+    .create-post-card .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .create-post-card textarea {
+        min-height: 100px !important;
+        font-size: 1rem !important;
+    }
+
+    .create-post-card .btn-primary {
+        padding: 0.8rem 2rem !important;
+        font-size: 1rem !important;
+    }
+}

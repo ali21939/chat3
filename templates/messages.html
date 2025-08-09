@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h2><i class="fas fa-comments me-2"></i>الرسائل</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+                    <i class="fas fa-plus me-2"></i>رسالة جديدة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% if chat_users %}
+                <div class="messages-list">
+                    {% for chat in chat_users %}
+                    <div class="message-item card mb-3 border-0 shadow-sm">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    {{ chat.user.username[0].upper() }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="mb-1">{{ chat.user.full_name }}</h5>
+                                            <p class="mb-0 small" style="color: #8B4513;">{{ chat.last_message.content[:50] }}{% if chat.last_message.content|length > 50 %}...{% endif %}</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">{{ chat.last_message.timestamp.strftime('%H:%M') }}</small>
+                                            {% if chat.unread_count > 0 %}
+                                                <div class="badge bg-primary rounded-pill mt-1">{{ chat.unread_count }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ms-2">
+                                    <a href="{{ url_for('chat', user_id=chat.user.id) }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h4>لا توجد رسائل</h4>
+                    <p class="text-muted">ابدأ محادثة جديدة مع أصدقائك</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+                        <i class="fas fa-plus me-2"></i>رسالة جديدة
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal للرسالة الجديدة -->
+<div class="modal fade" id="newMessageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">رسالة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newMessageForm">
+                    <div class="mb-3">
+                        <label for="searchUser" class="form-label">البحث عن مستخدم</label>
+                        <input type="text" class="form-control" id="searchUser" placeholder="اكتب اسم المستخدم...">
+                        <div id="userResults" class="mt-2"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.message-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.message-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary), var(--success));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#userResults .user-result {
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#userResults .user-result:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+<script>
+// البحث عن المستخدمين
+document.getElementById('searchUser').addEventListener('input', function() {
+    const query = this.value.trim();
+    const resultsDiv = document.getElementById('userResults');
+    
+    if (query.length < 2) {
+        resultsDiv.innerHTML = '';
+        return;
+    }
+    
+    fetch(`/search_users?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            resultsDiv.innerHTML = '';
+            data.users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-result d-flex align-items-center';
+                userDiv.innerHTML = `
+                    <div class="avatar small me-3">${user.username[0].toUpperCase()}</div>
+                    <div>
+                        <strong>${user.full_name}</strong>
+                        <br><small class="text-muted">@${user.username}</small>
+                    </div>
+                `;
+                userDiv.addEventListener('click', () => {
+                    window.location.href = `/chat/${user.id}`;
+                });
+                resultsDiv.appendChild(userDiv);
+            });
+        });
+});
+</script>
+{% endblock %}

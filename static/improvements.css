@@ -1,0 +1,269 @@
+
+/* تحسينات التصميم العامة */
+.post {
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 2rem !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+}
+
+.post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* تحسين header المنشورات */
+.post .card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    padding: 1.5rem !important;
+    color: white;
+}
+
+.post-user h4 {
+    color: white !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.post-user .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* تحسين avatars */
+.avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b, #feca57);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: white;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.avatar.small {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* تحسين أزرار الإجراءات */
+.post-actions .action-btn {
+    border-radius: 25px !important;
+    padding: 0.6rem 1.2rem !important;
+    margin: 0 0.3rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+}
+
+.post-actions .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(145deg, #667eea, #764ba2);
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.post-actions .action-btn.liked {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+    color: white !important;
+}
+
+/* تحسين قسم التعليقات */
+.comments-section {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.comment {
+    background: white;
+    border-radius: 15px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.comment:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.comment.reply {
+    background: linear-gradient(145deg, #f1f3f4, #ffffff);
+    border-left: 4px solid #667eea;
+    margin-right: 2rem;
+}
+
+/* تحسين نموذج التعليقات */
+.comment-form textarea {
+    border-radius: 15px !important;
+    border: 2px solid #e9ecef !important;
+    padding: 1rem !important;
+    transition: all 0.3s ease;
+    resize: none;
+}
+
+.comment-form textarea:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+.comment-form .btn {
+    border-radius: 25px !important;
+    padding: 0.6rem 1.5rem !important;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    transition: all 0.3s ease;
+}
+
+.comment-form .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* تحسين بطاقة إنشاء المنشور */
+.create-post-card {
+    border: none !important;
+    border-radius: 20px !important;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden;
+}
+
+.create-post-card .card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    color: white;
+}
+
+.create-post-card textarea {
+    border-radius: 15px !important;
+    border: 2px solid #e9ecef !important;
+    transition: all 0.3s ease;
+}
+
+.create-post-card textarea:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+.create-post-card .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    border-radius: 25px !important;
+    padding: 0.8rem 2rem !important;
+    transition: all 0.3s ease;
+}
+
+.create-post-card .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* تحسين إحصائيات المنشور */
+.post-stats {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+}
+
+.post-stats span {
+    background: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.post-stats span:hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* تحسين نموذج الرد */
+.reply-form {
+    background: linear-gradient(145deg, #f1f3f4, #ffffff);
+    border-radius: 15px;
+    padding: 1rem;
+    border: 2px solid rgba(102, 126, 234, 0.1);
+    animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reply-form textarea {
+    border-radius: 10px !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.reply-form .btn {
+    border-radius: 20px !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* تحسين الألوان والانتقالات */
+* {
+    transition: all 0.3s ease;
+}
+
+/* تحسين responsive */
+@media (max-width: 768px) {
+    .post {
+        margin-bottom: 1.5rem !important;
+        border-radius: 15px !important;
+    }
+
+    .post .card-header {
+        padding: 1rem !important;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .avatar.small {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .post-actions .action-btn {
+        padding: 0.5rem 0.8rem !important;
+        font-size: 0.9rem;
+    }
+}

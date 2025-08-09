@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-user-plus"></i>
+            <h2>إنشاء حساب جديد</h2>
+            <p>انضم إلى مجتمعنا وابدأ المشاركة</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('signup') }}">
+            <div class="form-group">
+                <label for="full_name">الاسم الكامل:</label>
+                <input type="text" id="full_name" name="full_name" required>
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="username">اسم المستخدم:</label>
+                <input type="text" id="username" name="username" required>
+                <i class="fas fa-at"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني:</label>
+                <input type="email" id="email" name="email" required>
+                <i class="fas fa-envelope"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" name="password" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">تأكيد كلمة المرور:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <div class="form-agreement">
+                <label class="agreement">
+                    <input type="checkbox" name="agreement" required>
+                    أوافق على <a href="#">شروط الخدمة</a> و <a href="#">سياسة الخصوصية</a>
+                </label>
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <i class="fas fa-user-plus"></i> إنشاء حساب
+            </button>
+
+            <div class="auth-footer">
+                لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">تسجيل الدخول</a>
+            </div>
+        </form>
+    </div>
+
+
+</div>
+{% endblock %}

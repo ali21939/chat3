@@ -1,0 +1,205 @@
+/* تحسينات إضافية للتصميم */
+
+/* تحسينات صفحة تعديل الملف الشخصي */
+.profile-image-container {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.profile-image-container:hover {
+    transform: scale(1.05);
+}
+
+.profile-image-container img,
+.profile-image-container > div {
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.profile-image-container:hover img,
+.profile-image-container:hover > div {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25) !important;
+}
+
+.profile-image-container label {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.profile-image-container label:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2, #667eea) !important;
+}
+
+/* تحسين النماذج العامة */
+.form-control {
+    border-radius: 12px !important;
+    border: 2px solid #e9ecef !important;
+    padding: 0.8rem 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-control:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* تحسين البطاقات العامة */
+.card {
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa) !important;
+}
+
+.card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* تحسين الأزرار العامة */
+.btn {
+    border-radius: 25px !important;
+    padding: 0.8rem 2rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3) !important;
+}
+
+.btn-success:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4) !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    border: none !important;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3) !important;
+}
+
+/* تحسين التنبيهات */
+.alert {
+    border: none !important;
+    border-radius: 15px !important;
+    padding: 1rem 1.5rem !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #4facfe, #00f2fe) !important;
+    color: white !important;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+    color: white !important;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+    color: white !important;
+}
+
+/* تحسين الملصقات */
+.form-label {
+    font-weight: 600 !important;
+    color: #495057 !important;
+    margin-bottom: 0.7rem !important;
+}
+
+/* تحسين النص المساعد */
+.text-muted {
+    color: #6c757d !important;
+    font-size: 0.9rem !important;
+}
+
+/* تحسين زر الرجوع */
+.btn-light {
+    background: white !important;
+    border: 2px solid #e9ecef !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-light:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border-color: transparent !important;
+    color: white !important;
+    transform: scale(1.1) !important;
+}
+
+/* تحسينات خاصة للنافذة */
+.rounded-circle {
+    border: 3px solid rgba(255, 255, 255, 0.9) !important;
+    transition: all 0.3s ease !important;
+}
+
+.rounded-circle:hover {
+    border-color: rgba(102, 126, 234, 0.5) !important;
+    transform: scale(1.05) !important;
+}
+
+/* تحسين الظلال */
+.shadow-lg {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* تحسين الانتقالات العامة */
+* {
+    transition: all 0.3s ease;
+}
+
+/* تحسين responsive للملف الشخصي */
+@media (max-width: 768px) {
+    .profile-image-container img,
+    .profile-image-container > div {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 36px !important;
+    }
+
+    .profile-image-container label {
+        width: 30px !important;
+        height: 30px !important;
+        bottom: 3px !important;
+        right: 3px !important;
+    }
+
+    .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .btn {
+        padding: 0.7rem 1.5rem !important;
+        font-size: 0.9rem !important;
+    }
+}

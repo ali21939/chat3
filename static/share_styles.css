@@ -1,0 +1,150 @@
+/* تحسينات المودال للمشاركة */
+.modal-content {
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    color: white !important;
+    border-bottom: none !important;
+    padding: 1.5rem !important;
+}
+
+.modal-title {
+    font-weight: 700 !important;
+    font-size: 1.3rem !important;
+}
+
+.btn-close {
+    background: white !important;
+    opacity: 0.8 !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+}
+
+.btn-close:hover {
+    opacity: 1 !important;
+    transform: scale(1.1) !important;
+}
+
+.modal-body {
+    padding: 2rem !important;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa) !important;
+}
+
+/* تحسين أزرار المشاركة */
+.share-option {
+    border-radius: 15px !important;
+    padding: 1rem 0.5rem !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    height: 80px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.share-option i {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.share-option:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.share-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease;
+    opacity: 0.9;
+    z-index: -1;
+}
+
+.share-option:hover::before {
+    left: 0;
+}
+
+/* ألوان خاصة لكل منصة */
+.share-option[data-platform="facebook"]::before {
+    background: #1877f2;
+}
+
+.share-option[data-platform="whatsapp"]::before {
+    background: #25d366;
+}
+
+.share-option[data-platform="twitter"]::before {
+    background: #1da1f2;
+}
+
+.share-option[data-platform="instagram"]::before {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.share-option[data-platform="copy"]::before {
+    background: #6c757d;
+}
+
+.share-option[data-platform="email"]::before {
+    background: #007bff;
+}
+
+/* تحسين الشبكة */
+.share-options .row {
+    margin: 0 !important;
+}
+
+.share-options .col-4 {
+    padding: 0.5rem !important;
+}
+
+/* تأثيرات خاصة */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal.show .modal-dialog {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+/* تحسين responsive للمودال */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 1rem !important;
+    }
+
+    .share-option {
+        height: 70px !important;
+        padding: 0.8rem 0.3rem !important;
+    }
+
+    .share-option i {
+        font-size: 1.3rem !important;
+    }
+
+    .share-option small {
+        font-size: 0.7rem !important;
+    }
+}

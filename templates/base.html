@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="منصة تواصل اجتماعي عصرية وأنيقة">
+    <meta name="author" content="تواصل">
+    <title>{% block title %}تواصل - منصة التواصل الاجتماعي العصرية{% endblock %}</title>
+
+    <!-- Preload Critical Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+
+    <!-- Custom Styles - Unified Design -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='unified_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth_styles.css') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+
+    <!-- Meta Tags for Social Media -->
+    <meta property="og:title" content="تواصل - منصة التواصل الاجتماعي العصرية">
+    <meta property="og:description" content="انضم إلى مجتمعنا العصري للتواصل والمشاركة">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg" id="mainNavbar">
+        <div class="container-fluid px-4">
+            <!-- Logo Section -->
+            <div class="logo" data-aos="fade-right">
+                <i class="fas fa-comments text-white"></i>
+                <span class="text-white">تواصل</span>
+            </div>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#navbarContent" aria-controls="navbarContent" 
+                    aria-expanded="false" aria-label="تبديل التنقل">
+                <div class="mobile-menu-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+
+            <!-- Collapsible Content -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <!-- Central Search -->
+                <div class="d-flex justify-content-center flex-grow-1 my-3 my-lg-0">
+                    <div class="search-container" data-aos="fade-up" data-aos-delay="100">
+                        <form id="searchForm" class="search-form" action="/search" method="get">
+                            <input type="text" name="query" class="search-input" 
+                                   placeholder="ابحث عن المنشورات والأشخاص..." 
+                                   autocomplete="off">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+
+
+
+
+                <!-- Navigation Links -->
+                <div class="nav-links d-flex align-items-center" data-aos="fade-left" data-aos-delay="200">
+                    <a href="{{ url_for('home') }}" class="nav-link-modern {{ 'active' if request.endpoint == 'home' }}">
+                        <i class="fas fa-home"></i>
+                        <span>الرئيسية</span>
+                    </a>
+
+                    {% if 'user_id' in session %}
+                        <a href="{{ url_for('messages') }}" class="nav-link-modern {{ 'active' if request.endpoint == 'messages' }}">
+                            <i class="fas fa-envelope" style="font-size: 1.3rem;"></i>
+                            <span>الرسائل</span>
+                            <span class="notification-badge">3</span>
+                        </a>
+
+                        <a href="{{ url_for('profile', username=session['username']) }}" class="nav-link-modern {{ 'active' if request.endpoint == 'profile' }}">
+                            <i class="fas fa-user-circle"></i>
+                            <span>{{ session['username'] }}</span>
+                        </a>
+
+                        <div class="user-menu-dropdown">
+                            <button class="user-avatar-btn" data-bs-toggle="dropdown">
+                                <img src="{{ url_for('static', filename='uploads/profiles/' + session.get('profile_pic', 'default.png')) }}" 
+                                     alt="صورة شخصية" class="user-avatar">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-modern">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('edit_profile') }}">
+                                        <i class="fas fa-edit"></i> تعديل الملف الشخصي
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('profile', username=session['username']) }}">
+                                        <i class="fas fa-user"></i> ملفي الشخصي
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link-modern login-btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>دخول</span>
+                        </a>
+
+                        <a href="{{ url_for('signup') }}" class="nav-link-modern signup-btn">
+                            <i class="fas fa-user-plus"></i>
+                            <span>انضم إلينا</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- 🌟 Modern Footer Section -->
+    <footer class="modern-footer">
+        <div class="footer-background">
+            <div class="footer-gradient"></div>
+            <div class="footer-particles"></div>
+        </div>
+
+        <div class="footer-container">
+            <!-- الصف الرئيسي للمحتوى -->
+            <div class="footer-main">
+                <!-- قسم معلومات الموقع -->
+                <div class="footer-section about-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-comments"></i>
+                        <span>تواصل</span>
+                    </div>
+                    <p class="footer-description">
+                        منصة التواصل الاجتماعي العصرية المصممة خصيصاً للمجتمع العربي. 
+                        نهدف إلى ربط القلوب وتقوية الروابط الاجتماعية.
+                    </p>
+                    <div class="social-media">
+                        <h4>تابعنا على</h4>
+                        <div class="social-links">
+                            <a href="#" class="social-link facebook" title="فيسبوك">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link twitter" title="تويتر">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-link instagram" title="إنستغرام">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="social-link linkedin" title="لينكد إن">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-link youtube" title="يوتيوب">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم الروابط السريعة -->
+                <div class="footer-section links-section">
+                    <h3>
+                        <i class="fas fa-link"></i>
+                        روابط سريعة
+                    </h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('home') }}">
+                            <i class="fas fa-home"></i> الصفحة الرئيسية
+                        </a></li>
+                        <li><a href="{{ url_for('messages') }}">
+                            <i class="fas fa-envelope"></i> الرسائل
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-users"></i> المجتمعات
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-heart"></i> فلسطين
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-info-circle"></i> من نحن
+                        </a></li>
+                    </ul>
+                </div>
+
+                <!-- قسم الحساب -->
+                <div class="footer-section account-section">
+                    <h3>
+                        <i class="fas fa-user-circle"></i>
+                        حسابك
+                    </h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                        </a></li>
+                        <li><a href="{{ url_for('signup') }}">
+                            <i class="fas fa-user-plus"></i> إنشاء حساب جديد
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-cog"></i> الإعدادات
+                        </a></li>
+                        <li><a href="#">
+                            <i class="fas fa-question-circle"></i> المساعدة
+                        </a></li>
+                    </ul>
+                </div>
+
+                <!-- قسم التواصل -->
+                <div class="footer-section contact-section">
+                    <h3>
+                        <i class="fas fa-phone-alt"></i>
+                        تواصل معنا
+                    </h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@tawasol.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+20 123 456 789</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>القاهرة، مصر</span>
+                        </div>
+                    </div>
+
+                    <!-- نموذج الاشتراك في النشرة الإخبارية -->
+                    <div class="newsletter">
+                        <h4>اشترك في نشرتنا الإخبارية</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="بريدك الإلكتروني">
+                            <button type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- خط الفاصل -->
+            <div class="footer-divider"></div>
+
+            <!-- قسم حقوق الطبع والنشر -->
+            <div class="footer-bottom">
+                <div class="copyright">
+                    <p>
+                        <i class="fas fa-copyright"></i>
+                        {{ now().year }} جميع الحقوق محفوظة لموقع تواصل
+                    </p>
+                </div>
+                <div class="footer-bottom-links">
+                    <a href="#">سياسة الخصوصية</a>
+                    <a href="#">شروط الاستخدام</a>
+                    <a href="#">اتفاقية المستخدم</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchForm = document.getElementById('searchForm');
+            const searchIcon = document.getElementById('searchIcon');
+            const searchInput = document.querySelector('.search-input');
+
+            if (searchIcon && searchInput && searchForm) {
+                searchIcon.addEventListener('click', function (e) {
+                    e.stopPropagation(); // مهم جداً
+                    searchForm.classList.add('show-input');
+                    searchInput.focus();
+                });
+
+                searchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        searchForm.submit();
+                    }
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!searchForm.contains(e.target)) {
+                        searchForm.classList.remove('show-input');
+                        searchInput.value = '';
+                    }
+                });
+            }
+        });
+    </script>
+
+
+
+
+
+    <script>
+        // إظهار أو إخفاء اختيار الملف حسب نوع البوست
+        const postType = document.getElementById('postType');
+        const mediaInputGroup = document.getElementById('mediaInputGroup');
+
+        if (postType) {
+            postType.addEventListener('change', () => {
+                const type = postType.value;
+                mediaInputGroup.style.display = (type === 'image' || type === 'video') ? 'block' : 'none';
+            });
+        }
+
+        // إضافة حدث لتصميم اختيار الملف
+        document.querySelector('.file-input-label')?.addEventListener('click', function () {
+            document.getElementById('postFile').click();
+        });
+
+        // عرض اسم الملف عند اختياره
+        document.getElementById('postFile')?.addEventListener('change', function (e) {
+            if (this.files.length > 0) {
+                const fileName = this.files[0].name;
+                document.querySelector('.file-input-label').innerHTML =
+                    `<i class="fas fa-file"></i> ${fileName}`;
+            }
+        });
+
+        // إضافة تعليق
+        $(document).on('submit', '.comment-form', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const postId = form.data('post-id');
+            const parentId = form.data('parent-id') || null;
+            const content = form.find('textarea').val().trim();
+
+            if (!content) return;
+
+            $.ajax({
+                url: '/add_comment',
+                method: 'POST',
+                data: {
+                    post_id: postId,
+                    content: content,
+                    parent_id: parentId
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // إضافة التعليق الجديد
+                        const comment = response.comment;
+                        let newCommentHtml = `
+                            <div class="comment mb-3" id="comment-${comment.id}">
+                                <div class="d-flex">
+                                    <div class="avatar small me-3">${comment.user.initial}</div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <h5 class="mb-0">${comment.user.full_name}</h5>
+                                            <small class="text-muted">${comment.timestamp}</small>
+                                        </div>
+                                        <p class="mb-1 mt-1">${comment.content}</p>
+                                        <div class="comment-actions">
+                                            <button class="btn btn-sm btn-link like-btn" data-comment-id="${comment.id}">
+                                                <i class="far fa-heart me-1"></i>
+                                                <span class="likes-count">${comment.likes_count}</span>
+                                            </button>
+                                            <button class="btn btn-sm btn-link reply-btn" data-comment-id="${comment.id}">
+                                                <i class="fas fa-reply me-1"></i> رد
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        if (parentId) {
+                            // رد على تعليق
+                            form.closest('.comment-reply').before(newCommentHtml);
+                        } else {
+                            // تعليق جديد
+                            form.closest('.comments-form-container').before(newCommentHtml);
+                        }
+
+                        form.find('textarea').val('');
+                    }
+                }
+            });
+        });
+
+        // الإعجاب بالمنشور أو التعليق
+        $(document).on('click', '.like-btn', function () {
+            const btn = $(this);
+            const postId = btn.data('post-id');
+            const commentId = btn.data('comment-id');
+
+            $.ajax({
+                url: '/toggle_like',
+                method: 'POST',
+                data: {
+                    post_id: postId,
+                    comment_id: commentId
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        const heartIcon = btn.find('i');
+                        const likesCount = btn.find('.likes-count');
+
+                        if (response.liked) {
+                            heartIcon.removeClass('far').addClass('fas');
+                            btn.addClass('liked');
+                        } else {
+                            heartIcon.removeClass('fas').addClass('far');
+                            btn.removeClass('liked');
+                        }
+
+                        likesCount.text(response.likes_count);
+                    }
+                }
+            });
+        });
+
+        // مشاركة المنشور
+        $(document).on('click', '.share-btn', function () {
+            const btn = $(this);
+            const postId = btn.data('post-id');
+
+            $.ajax({
+                url: '/share_post',
+                method: 'POST',
+                data: {
+                    post_id: postId
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        const sharesCount = btn.find('.shares-count');
+                        sharesCount.text(response.shares_count);
+
+                        // إنشاء modal للمشاركة
+                        const shareModal = `
+                            <div class="modal fade" id="shareModal" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">مشاركة المنشور</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <div class="d-grid gap-2">
+                                                <a href="${response.whatsapp_url}" target="_blank" class="btn btn-success">
+                                                    <i class="fab fa-whatsapp me-2"></i>واتساب
+                                                </a>
+                                                <a href="${response.facebook_url}" target="_blank" class="btn btn-primary">
+                                                    <i class="fab fa-facebook me-2"></i>فيسبوك
+                                                </a>
+                                                <a href="${response.twitter_url}" target="_blank" class="btn btn-info">
+                                                    <i class="fab fa-twitter me-2"></i>تويتر
+                                                </a>
+                                                <button class="btn btn-secondary" onclick="copyToClipboard('${response.share_url}')">
+                                                    <i class="fas fa-copy me-2"></i>نسخ الرابط
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // إزالة modal قديم إن وجد
+                        $('#shareModal').remove();
+                        
+                        // إضافة modal جديد
+                        $('body').append(shareModal);
+                        $('#shareModal').modal('show');
+                    }
+                }
+            });
+        });
+
+        // نسخ الرابط
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('تم نسخ الرابط!');
+                $('#shareModal').modal('hide');
+            });
+        }
+
+        // إظهار/إخفاء الرد على التعليق
+        $(document).on('click', '.reply-btn', function () {
+            const btn = $(this);
+            const commentId = btn.data('comment-id');
+            const commentContainer = btn.closest('.comment');
+
+            // إزالة أي نماذج ردود موجودة
+            $('.comment-reply').remove();
+
+            // إنشاء نموذج رد جديد
+            const replyForm = `
+                <div class="comment-reply">
+                    <form class="comment-form" data-post-id="${commentContainer.closest('.post').data('post-id')}" data-parent-id="${commentId}">
+                        <textarea placeholder="اكتب ردك هنا..." required></textarea>
+                        <button type="submit"><i class="fas fa-paper-plane"></i> نشر الرد</button>
+                    </form>
+                </div>
+            `;
+
+            commentContainer.after(replyForm);
+        });
+
+    </script>
+
+    <!-- Modern JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    
+    <!-- Enhanced Interactions -->
+    <script src="{{ url_for('static', filename='enhanced_interactions.js') }}"></script>
+
+    <!-- Custom Modern JavaScript -->
+    <script>
+        // Initialize AOS (Animate On Scroll)
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            offset: 100
+        });
+
+        // Modern Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('mainNavbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Modern Search Enhancement
+        const searchInput = document.querySelector('.search-input');
+        const searchForm = document.querySelector('.search-form');
+
+        if (searchInput) {
+            searchInput.addEventListener('focus', () => {
+                searchForm.style.transform = 'scale(1.02)';
+            });
+
+            searchInput.addEventListener('blur', () => {
+                searchForm.style.transform = 'scale(1)';
+            });
+        }
+
+        // Post Hover Effects with Mouse Tracking
+        document.querySelectorAll('.post').forEach(post => {
+            post.addEventListener('mousemove', (e) => {
+                const rect = post.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                post.style.setProperty('--mouse-x', x + '%');
+                post.style.setProperty('--mouse-y', y + '%');
+            });
+        });
+
+        // Smooth Animations for Interactive Elements
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+
+                this.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Modern Dropdown Animations
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const dropdown = this.nextElementSibling;
+                if (dropdown) {
+                    dropdown.style.animation = 'slideDown 0.3s ease';
+                }
+            });
+        });
+
+        // Enhanced Mobile Menu
+        const mobileToggle = document.querySelector('.navbar-toggler');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        }
+
+        // Real-time Typography Improvements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading states
+            const posts = document.querySelectorAll('.post');
+            posts.forEach((post, index) => {
+                post.style.animationDelay = (index * 0.1) + 's';
+                post.classList.add('fade-in');
+            });
+        });
+
+        // Progressive Web App Features
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+
+        // Modern Theme Toggle (if needed)
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+        }
+    </script>
+
+    <!-- CSS Animations -->
+    <style>
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease;
+            pointer-events: none;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .mobile-menu-icon {
+            width: 24px;
+            height: 18px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .mobile-menu-icon span {
+            display: block;
+            position: absolute;
+            height: 2px;
+            width: 100%;
+            background: var(--text-primary);
+            border-radius: 1px;
+            opacity: 1;
+            left: 0;
+            transform: rotate(0deg);
+            transition: 0.25s ease-in-out;
+        }
+
+        .mobile-menu-icon span:nth-child(1) { top: 0px; }
+        .mobile-menu-icon span:nth-child(2) { top: 8px; }
+        .mobile-menu-icon span:nth-child(3) { top: 16px; }
+
+        .navbar-toggler.active .mobile-menu-icon span:nth-child(1) {
+            top: 8px;
+            transform: rotate(135deg);
+        }
+
+        .navbar-toggler.active .mobile-menu-icon span:nth-child(2) {
+            opacity: 0;
+            left: -60px;
+        }
+
+        .navbar-toggler.active .mobile-menu-icon span:nth-child(3) {
+            top: 8px;
+            transform: rotate(-135deg);
+        }
+    </style>
+</body>
+</html>
